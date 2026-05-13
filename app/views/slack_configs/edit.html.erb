@@ -2,39 +2,59 @@
 
 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-lg">
   <%= form_with model: @slack_config, url: slack_config_path do |f| %>
-    <div class="mb-4">
-      <%= f.label :webhook_url, "Webhook URL", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.url_field :webhook_url, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400", placeholder: "https://hooks.slack.com/services/..." %>
-    </div>
 
     <div class="mb-4">
-      <%= f.label :channel_name, "通知チャンネル", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.text_field :channel_name, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400", placeholder: "#入退室" %>
-      <p class="text-xs text-gray-400 mt-1">Standardプラン以上で有効</p>
+      <%= f.label :webhook_url, "Webhook URL", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+      <%= f.url_field :webhook_url,
+          placeholder: "https://hooks.slack.com/services/...",
+          class: "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" %>
     </div>
 
     <div class="mb-4">
-      <%= f.label :bot_name, "Bot名", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.text_field :bot_name, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" %>
+      <%= f.label :bot_name, "Bot名", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+      <%= f.text_field :bot_name,
+          class: "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" %>
     </div>
 
-    <div class="mb-4">
-      <%= f.label :enter_message, "入室メッセージ", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.text_area :enter_message, rows: 2, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400", placeholder: "🟢 {name} さんが入室しました" %>
-      <p class="text-xs text-gray-400 mt-1">{name} で名前に置換されます（Proプラン）</p>
-    </div>
+    <% if current_tenant.plan == "pro" %>
+      <div class="mb-4">
+        <%= f.label :enter_message, "入室メッセージ", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+        <%= f.text_area :enter_message, rows: 2,
+            placeholder: "🟢 {name} さんが入室しました",
+            class: "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" %>
+        <p class="text-xs text-gray-400 mt-1">{name} が名前に置き換わります</p>
+      </div>
 
-    <div class="mb-4">
-      <%= f.label :leave_message, "退室メッセージ", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.text_area :leave_message, rows: 2, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400", placeholder: "🔴 {name} さんが退室しました" %>
-    </div>
+      <div class="mb-4">
+        <%= f.label :leave_message, "退室メッセージ", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+        <%= f.text_area :leave_message, rows: 2,
+            placeholder: "🔴 {name} さんが退室しました",
+            class: "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" %>
+      </div>
+    <% else %>
+      <div class="mb-4 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-500">
+        <p class="font-medium text-gray-600 mb-2">通知メッセージ（デフォルト）</p>
+        <p>🟢 入室 ○○ さん</p>
+        <p>🔴 退室 ○○ さん</p>
+        <p class="mt-2 text-xs text-gray-400">
+          メッセージのカスタマイズは
+          <span class="font-medium text-indigo-500">Pro プラン</span>
+          で利用できます
+        </p>
+      </div>
+    <% end %>
 
-    <div class="mb-6">
-      <%= f.label :allowed_ip_range, "許可IPレンジ（Wi-Fi制限）", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.text_field :allowed_ip_range, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400", placeholder: "192.168.1.0/24" %>
-      <p class="text-xs text-gray-400 mt-1">Standardプラン以上で有効。空欄の場合は制限なし</p>
-    </div>
+    <% if current_tenant.plan.in?(%w[standard pro]) %>
+      <div class="mb-6">
+        <%= f.label :allowed_ip_range, "許可IPレンジ（Wi-Fi制限）", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+        <%= f.text_field :allowed_ip_range,
+            placeholder: "192.168.1.0/24",
+            class: "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" %>
+        <p class="text-xs text-gray-400 mt-1">空欄の場合は制限なし</p>
+      </div>
+    <% end %>
 
-    <%= f.submit "保存する", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg text-sm cursor-pointer" %>
+    <%= f.submit "保存する",
+        class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-xl text-sm cursor-pointer transition" %>
   <% end %>
 </div>
