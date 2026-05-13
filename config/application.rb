@@ -38,5 +38,8 @@ module TapIn
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Render のロードバランサー経由でも正しいクライアントIPを取得する
+    config.action_dispatch.trusted_proxies = ActionDispatch::RemoteIp::TRUSTED_PROXIES
   end
 end
