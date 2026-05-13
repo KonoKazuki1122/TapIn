@@ -1,0 +1,31 @@
+<div class="mb-8">
+  <h1 class="text-2xl font-bold text-gray-900"><%= @tenant.name %></h1>
+  <p class="text-sm text-gray-500 mt-1">プラン: <span class="font-medium capitalize"><%= @tenant.plan %></span></p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-semibold text-gray-800">NFCタグ</h2>
+      <%= link_to "管理する", nfc_tags_path, class: "text-sm text-indigo-600 hover:underline" %>
+    </div>
+    <p class="text-3xl font-bold text-indigo-600"><%= @nfc_tags.count %></p>
+    <p class="text-sm text-gray-400 mt-1">登録済みタグ数</p>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-semibold text-gray-800">Slack通知</h2>
+      <%= link_to "設定する", edit_slack_config_path, class: "text-sm text-indigo-600 hover:underline" %>
+    </div>
+    <% if @slack_config&.webhook_url.present? %>
+      <span class="inline-flex items-center gap-1 text-green-600 text-sm font-medium">
+        <span class="w-2 h-2 bg-green-500 rounded-full inline-block"></span> 設定済み
+      </span>
+    <% else %>
+      <span class="inline-flex items-center gap-1 text-gray-400 text-sm">
+        <span class="w-2 h-2 bg-gray-300 rounded-full inline-block"></span> 未設定
+      </span>
+    <% end %>
+  </div>
+</div>

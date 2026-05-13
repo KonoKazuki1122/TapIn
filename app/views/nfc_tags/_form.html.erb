@@ -1,0 +1,32 @@
+<%= form_with model: nfc_tag, url: nfc_tag.new_record? ? nfc_tags_path : nfc_tag_path(nfc_tag) do |f| %>
+  <% if nfc_tag.errors.any? %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">
+      <% nfc_tag.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="mb-4">
+    <%= f.label :tag_id, "タグID", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :tag_id, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400", placeholder: "NFC タグの物理ID" %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :label, "ラベル（場所名など）", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :label, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400", placeholder: "例: 入口、会議室A" %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :event_type, "イベント種別", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.select :event_type, [["入室", "enter"], ["退室", "leave"], ["両方", "both"]], {}, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" %>
+  </div>
+
+  <div class="mb-6 flex items-center gap-2">
+    <%= f.check_box :active, class: "rounded border-gray-300 text-indigo-600" %>
+    <%= f.label :active, "有効", class: "text-sm text-gray-700" %>
+  </div>
+
+  <%= f.submit nfc_tag.new_record? ? "追加する" : "更新する", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg text-sm cursor-pointer" %>
+  <%= link_to "キャンセル", nfc_tags_path, class: "ml-3 text-sm text-gray-400 hover:underline" %>
+<% end %>

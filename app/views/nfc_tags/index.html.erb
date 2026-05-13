@@ -1,0 +1,29 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-bold text-gray-900">NFCタグ管理</h1>
+  <%= link_to "＋ タグを追加", new_nfc_tag_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-lg" %>
+</div>
+
+<% if @nfc_tags.empty? %>
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center text-gray-400">
+    <p class="text-lg">タグが登録されていません</p>
+    <p class="text-sm mt-2">「タグを追加」からNFCタグを登録してください</p>
+  </div>
+<% else %>
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100">
+    <% @nfc_tags.each do |tag| %>
+      <div class="flex items-center justify-between px-6 py-4">
+        <div>
+          <p class="font-medium text-gray-800"><%= tag.label.presence || tag.tag_id %></p>
+          <p class="text-xs text-gray-400 mt-0.5">ID: <%= tag.tag_id %> ・ <%= tag.event_type %></p>
+        </div>
+        <div class="flex items-center gap-3">
+          <% unless tag.active %>
+            <span class="text-xs text-gray-400">無効</span>
+          <% end %>
+          <%= link_to "編集", edit_nfc_tag_path(tag), class: "text-sm text-indigo-600 hover:underline" %>
+          <%= link_to "削除", nfc_tag_path(tag), data: { turbo_method: :delete, turbo_confirm: "削除しますか？" }, class: "text-sm text-red-400 hover:underline" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
