@@ -1,4 +1,4 @@
-class Dev::PlanSwitcherController < ApplicationController
+class Dev::PlanSwitchersController < ApplicationController
   before_action :authenticate_user!
   before_action { raise "dev only" unless Rails.env.development? }
 
