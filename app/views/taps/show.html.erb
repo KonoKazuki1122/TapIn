@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= @nfc_tag.event_type == "enter" ? "入室" : "退室" %> | TapIn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-sm">
+
+    <div id="nameBox" class="hidden">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg
+          <%= @nfc_tag.event_type == 'leave' ? 'bg-red-500' : 'bg-indigo-600' %>">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <% if @nfc_tag.event_type == "leave" %>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            <% else %>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+            <% end %>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">
+          <%= @nfc_tag.event_type == "enter" ? "入室" : "退室" %>
+        </h1>
+        <% if @nfc_tag.label.present? %>
+          <p class="text-sm text-gray-400 mt-1"><%= @nfc_tag.label %></p>
+        <% end %>
+        <p class="text-sm text-gray-500 mt-3">最初だけ名前を入力してください</p>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <input id="nameInput" type="text"
+          placeholder="名前を入力"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4">
+        <button id="submitBtn"
+          class="w-full <%= @nfc_tag.event_type == 'leave' ? 'bg-red-500 hover:bg-red-600' : 'bg-indigo-600 hover:bg-indigo-700' %> text-white font-semibold py-3 rounded-xl text-base transition">
+          <%= @nfc_tag.event_type == "enter" ? "入室する" : "退室する" %>
+        </button>
+      </div>
+    </div>
+
+    <div id="resultBox" class="hidden text-center">
+      <div id="resultIcon" class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 shadow-lg bg-gray-100">
+        <span class="text-4xl" id="resultEmoji">⏳</span>
+      </div>
+      <p id="resultText" class="text-xl font-bold text-gray-900 mb-2">送信中...</p>
+      <p id="resultSub" class="text-sm text-gray-400"></p>
+      <button id="changeNameBtn" class="mt-6 text-sm text-gray-400 underline hidden">名前を変更する</button>
+    </div>
+
+  </div>
+
+  <script>
+    const TOKEN      = "<%= @nfc_tag.token %>";
+    const EVENT_TYPE = "<%= @nfc_tag.event_type == 'both' ? 'enter' : @nfc_tag.event_type %>";
+    const STORAGE_KEY = "tapin_user_name";
+    const COLOR_CLASS = EVENT_TYPE === "leave" ? "bg-red-500" : "bg-indigo-600";
+
+    const nameBox      = document.getElementById("nameBox");
+    const resultBox    = document.getElementById("resultBox");
+    const nameInput    = document.getElementById("nameInput");
+    const submitBtn    = document.getElementById("submitBtn");
+    const resultEmoji  = document.getElementById("resultEmoji");
+    const resultText   = document.getElementById("resultText");
+    const resultSub    = document.getElementById("resultSub");
+    const changeNameBtn = document.getElementById("changeNameBtn");
+    const resultIcon   = document.getElementById("resultIcon");
+
+    function showResult() {
+      nameBox.classList.add("hidden");
+      resultBox.classList.remove("hidden");
+    }
+
+    async function postTap(userName) {
+      showResult();
+      try {
+        const res = await fetch("/t/<%= @nfc_tag.token %>/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_name: userName, event_type: EVENT_TYPE })
+        });
+        const json = await res.json();
+        if (json.ok) {
+          resultEmoji.textContent = EVENT_TYPE === "enter" ? "✅" : "👋";
+          resultIcon.className = `inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 shadow-lg ${COLOR_CLASS}`;
+          resultText.textContent = EVENT_TYPE === "enter" ? "入室しました" : "退室しました";
+          resultSub.textContent = userName;
+        } else {
+          resultEmoji.textContent = "❌";
+          resultText.textContent = "エラーが発生しました";
+          resultSub.textContent = json.error || "";
+        }
+      } catch(e) {
+        resultEmoji.textContent = "❌";
+        resultText.textContent = "送信に失敗しました";
+      }
+      changeNameBtn.classList.remove("hidden");
+    }
+
+    submitBtn.addEventListener("click", () => {
+      const name = nameInput.value.trim();
+      if (!name) { nameInput.focus(); return; }
+      localStorage.setItem(STORAGE_KEY, name);
+      postTap(name);
+    });
+
+    changeNameBtn.addEventListener("click", () => {
+      localStorage.removeItem(STORAGE_KEY);
+      resultBox.classList.add("hidden");
+      nameBox.classList.remove("hidden");
+      nameInput.value = "";
+    });
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      postTap(saved);
+    } else {
+      nameBox.classList.remove("hidden");
+    }
+  </script>
+
+</body>
+</html>

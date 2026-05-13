@@ -10,17 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_13_140255) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_13_143228) do
   create_table "nfc_tags", force: :cascade do |t|
     t.integer "tenant_id", null: false
-    t.string "tag_id", null: false
     t.string "label"
     t.string "event_type", null: false
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["tenant_id", "tag_id"], name: "index_nfc_tags_on_tenant_id_and_tag_id", unique: true
+    t.string "token", default: "", null: false
     t.index ["tenant_id"], name: "index_nfc_tags_on_tenant_id"
+    t.index ["token"], name: "index_nfc_tags_on_token", unique: true
   end
 
   create_table "slack_configs", force: :cascade do |t|

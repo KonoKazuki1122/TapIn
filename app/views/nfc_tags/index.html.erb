@@ -1,6 +1,7 @@
 <div class="flex items-center justify-between mb-6">
   <h1 class="text-xl font-bold text-gray-900">NFCタグ管理</h1>
-  <%= link_to "＋ タグを追加", new_nfc_tag_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-lg" %>
+  <%= link_to "＋ タグを追加", new_nfc_tag_path,
+      class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-xl transition" %>
 </div>
 
 <% if @nfc_tags.empty? %>
@@ -11,19 +12,42 @@
 <% else %>
   <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100">
     <% @nfc_tags.each do |tag| %>
-      <div class="flex items-center justify-between px-6 py-4">
-        <div>
-          <p class="font-medium text-gray-800"><%= tag.label.presence || tag.tag_id %></p>
-          <p class="text-xs text-gray-400 mt-0.5">ID: <%= tag.tag_id %> ・ <%= tag.event_type %></p>
+      <div class="px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-medium text-gray-800"><%= tag.label %></p>
+            <p class="text-xs text-gray-400 mt-0.5">
+              <%= tag.event_type == "enter" ? "入室" : tag.event_type == "leave" ? "退室" : "両方" %>
+              <% unless tag.active %>
+                ・<span class="text-red-400">無効</span>
+              <% end %>
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <%= link_to "編集", edit_nfc_tag_path(tag), class: "text-sm text-indigo-600 hover:underline" %>
+            <%= link_to "削除", nfc_tag_path(tag),
+                data: { turbo_method: :delete, turbo_confirm: "削除しますか？" },
+                class: "text-sm text-red-400 hover:underline" %>
+          </div>
         </div>
-        <div class="flex items-center gap-3">
-          <% unless tag.active %>
-            <span class="text-xs text-gray-400">無効</span>
-          <% end %>
-          <%= link_to "編集", edit_nfc_tag_path(tag), class: "text-sm text-indigo-600 hover:underline" %>
-          <%= link_to "削除", nfc_tag_path(tag), data: { turbo_method: :delete, turbo_confirm: "削除しますか？" }, class: "text-sm text-red-400 hover:underline" %>
+
+        <%# タップ用URL %>
+        <div class="mt-3 bg-gray-50 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+          <code class="text-xs text-gray-500 break-all" id="url-<%= tag.id %>"><%= tap_url(tag.token) %></code>
+          <button onclick="copyUrl('<%= tap_url(tag.token) %>', this)"
+            class="shrink-0 text-xs text-indigo-600 hover:underline">コピー</button>
         </div>
+        <p class="text-xs text-gray-400 mt-1.5 ml-1">このURLをNFCタグやQRコードに書き込んでください</p>
       </div>
     <% end %>
   </div>
 <% end %>
+
+<script>
+  function copyUrl(url, btn) {
+    navigator.clipboard.writeText(url).then(() => {
+      btn.textContent = "コピー済み";
+      setTimeout(() => btn.textContent = "コピー", 2000);
+    });
+  }
+</script>
